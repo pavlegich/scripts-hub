@@ -12,7 +12,7 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-vendor/
+# vendor/
 
 # Directory for personal activities
 test/
@@ -20,6 +20,12 @@ test/
 # IDEs directories
 .idea
 .vscode
+*.iml
+out
+gen
 
 # System files
 .DS_Store
+
+# Database volume
+.database

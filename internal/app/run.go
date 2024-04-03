@@ -11,6 +11,7 @@ import (
 	"time"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/pavlegich/scripts-hub/internal/controllers/handlers"
 	"github.com/pavlegich/scripts-hub/internal/infra/config"
 	"github.com/pavlegich/scripts-hub/internal/infra/database"
 	"github.com/pavlegich/scripts-hub/internal/infra/logger"
@@ -47,16 +48,16 @@ func Run() error {
 	defer db.Close()
 
 	// Router
-	// ctrl := handlers.NewController(ctx, db, cfg)
-	// router, err := ctrl.BuildRoute(ctx)
-	// if err != nil {
-	// 	return fmt.Errorf("Run: build server route failed %w", err)
-	// }
+	ctrl := handlers.NewController(ctx, db, cfg)
+	router, err := ctrl.BuildRoute(ctx)
+	if err != nil {
+		return fmt.Errorf("Run: build server route failed %w", err)
+	}
 
 	// Server
 	srv := &http.Server{
 		Addr:    cfg.Address,
-		Handler: nil,
+		Handler: *router,
 	}
 
 	// Server graceful shutdown
@@ -77,7 +78,7 @@ func Run() error {
 		}
 	}()
 
-	logger.Log.Info("running server", zap.String("addr", ":8080"))
+	logger.Log.Info("running server", zap.String("addr", srv.Addr))
 
 	return srv.ListenAndServe()
 }
