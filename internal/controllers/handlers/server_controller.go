@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/pavlegich/scripts-hub/internal/controllers/middlewares"
+	commands "github.com/pavlegich/scripts-hub/internal/domains/command/controllers/http"
 	"github.com/pavlegich/scripts-hub/internal/infra/config"
 )
 
@@ -39,6 +40,8 @@ func (c *Controller) BuildRoute(ctx context.Context) (*http.Handler, error) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Hello, world!"))
 	})
+
+	commands.Activate(ctx, router, c.cfg, c.db)
 
 	handler := middlewares.Recovery(router)
 	handler = middlewares.WithLogging(handler)
