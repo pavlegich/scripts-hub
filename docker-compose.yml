@@ -6,10 +6,8 @@ services:
     command: ./start.sh db ./scripts-hub
     depends_on:
       - db
-    environment:
-      DB_PASSWORD: postgres
-      DATABASE_DSN: postgresql://postgres:postgres@db:5432/postgres
-      ADDRESS: :8080
+    env_file:
+      - .env
     ports:
       - "8080:8080"
 

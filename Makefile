@@ -31,13 +31,21 @@ tidy:
 # DEVELOPMENT
 # ====================
 
-## build: build the server
-build:
+## build-local: build the server locally
+build-local:
 	go build -o /tmp/bin/$(SERVER_BINARY_NAME) $(SERVER_PACKAGE_PATH)
 
-## run: run the server
-run: build
+## run-local: run the server locally
+run-local: build-local
 	/tmp/bin/$(SERVER_BINARY_NAME) -a=$(SERVER_ADDR) -d=$(DATABASE_DSN)
+
+## build-docker: build the server with docker-compose
+build-docker:
+	docker-compose build
+
+## run-docker: build the server with docker-compose
+run-docker: build-docker
+	docker-compose up
 
 # ====================
 # DOCUMENTATION
@@ -48,4 +56,4 @@ doc:
 	@echo 'open http://localhost:$(DOC_PORT)/pkg/github.com/pavlegich/scripts-hub/?m=all'
 	godoc -http=:$(DOC_PORT)
 
-.PHONY: help tidy build run doc
+.PHONY: help tidy build-local run-local build-docker run-docker doc

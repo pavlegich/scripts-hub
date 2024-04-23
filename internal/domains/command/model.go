@@ -14,7 +14,7 @@ type Command struct {
 // Service describes methods for communication between
 // handlers and repositories.
 type Service interface {
-	Create(ctx context.Context, command *Command) error
+	Create(ctx context.Context, command *Command) (int, error)
 	List(ctx context.Context) ([]*Command, error)
 	Unload(ctx context.Context, name string) (*Command, error)
 }
@@ -22,7 +22,7 @@ type Service interface {
 // Repository describes methods related with commands
 // for interaction with database.
 type Repository interface {
-	CreateCommand(ctx context.Context, command *Command) error
+	CreateCommand(ctx context.Context, command *Command) (*Command, error)
 	GetAllCommands(ctx context.Context) ([]*Command, error)
 	GetCommandByName(ctx context.Context, name string) (*Command, error)
 }
