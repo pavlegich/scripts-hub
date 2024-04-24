@@ -31,6 +31,15 @@ tidy:
 # DEVELOPMENT
 # ====================
 
+## test: run all tests
+test:
+	go test ./...
+
+## test/cover: run all tests and display coverage
+test/cover:
+	go test ./... -coverprofile=/tmp/coverage.out
+	go tool cover -html=/tmp/coverage.out
+
 ## build-local: build the server locally
 build-local:
 	go build -o /tmp/bin/$(SERVER_BINARY_NAME) $(SERVER_PACKAGE_PATH)
@@ -56,4 +65,4 @@ doc:
 	@echo 'open http://localhost:$(DOC_PORT)/pkg/github.com/pavlegich/scripts-hub/?m=all'
 	godoc -http=:$(DOC_PORT)
 
-.PHONY: help tidy build-local run-local build-docker run-docker doc
+.PHONY: help tidy build-local run-local build-docker run-docker doc test test/cover

@@ -19,7 +19,6 @@ import (
 	errs "github.com/pavlegich/scripts-hub/internal/errors"
 	"github.com/pavlegich/scripts-hub/internal/infra/config"
 	"github.com/pavlegich/scripts-hub/internal/infra/logger"
-	"github.com/pavlegich/scripts-hub/internal/utils"
 	"go.uber.org/zap"
 )
 
@@ -121,10 +120,22 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	resp := map[string]string{
+		"command_id": strconv.Itoa(commandID),
+	}
+	out, err := json.Marshal(resp)
+	if err != nil {
+		logger.Log.Error("HandleCreateCommand: marshal command to JSON failed",
+			zap.Int("command_id", commandID),
+			zap.Error(err))
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	resp := utils.ParamToJSON("command_id", strconv.Itoa(commandID))
-	w.Write(resp)
+	w.Write(out)
 }
 
 // HandleGetCommand handles request to get the requested command.
