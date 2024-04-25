@@ -10,24 +10,34 @@ import (
 
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/pavlegich/scripts-hub/internal/domains/command"
+	"github.com/pavlegich/scripts-hub/internal/entities"
 	errs "github.com/pavlegich/scripts-hub/internal/errors"
 )
 
-// Repository contains storage objects for storing the commands.
-type Repository struct {
+// Repository describes methods related with commands
+// for interaction with database.
+//
+//go:generate mockgen -destination=../mocks/mock_Repository.go -package=mocks github.com/pavlegich/scripts-hub/internal/repository Repository
+type Repository interface {
+	CreateCommand(ctx context.Context, command *entities.Command) (*entities.Command, error)
+	GetAllCommands(ctx context.Context) ([]*entities.Command, error)
+	GetCommandByName(ctx context.Context, name string) (*entities.Command, error)
+}
+
+// CommandRepository contains storage objects for storing the commands.
+type CommandRepository struct {
 	db *sql.DB
 }
 
 // NewCommandRepository returns new commands repository object.
-func NewCommandRepository(ctx context.Context, db *sql.DB) *Repository {
-	return &Repository{
+func NewCommandRepository(ctx context.Context, db *sql.DB) *CommandRepository {
+	return &CommandRepository{
 		db: db,
 	}
 }
 
 // CreateCommand stores new command into the storage.
-func (r *Repository) CreateCommand(ctx context.Context, c *command.Command) (*command.Command, error) {
+func (r *CommandRepository) CreateCommand(ctx context.Context, c *entities.Command) (*entities.Command, error) {
 	row := r.db.QueryRowContext(ctx, `INSERT INTO commands (name, script) 
 	VALUES ($1, $2) RETURNING id`, c.Name, c.Script)
 
@@ -53,16 +63,16 @@ func (r *Repository) CreateCommand(ctx context.Context, c *command.Command) (*co
 }
 
 // GetAllCommands gets and returns all the commands from the storage.
-func (r *Repository) GetAllCommands(ctx context.Context) ([]*command.Command, error) {
+func (r *CommandRepository) GetAllCommands(ctx context.Context) ([]*entities.Command, error) {
 	rows, err := r.db.QueryContext(ctx, `SELECT id, name, script FROM commands`)
 	if err != nil {
 		return nil, fmt.Errorf("GetAllCommands: read rows from table failed %w", err)
 	}
 	defer rows.Close()
 
-	cmdsList := make([]*command.Command, 0)
+	cmdsList := make([]*entities.Command, 0)
 	for rows.Next() {
-		var c command.Command
+		var c entities.Command
 		err = rows.Scan(&c.ID, &c.Name, &c.Script)
 		if err != nil {
 			return nil, fmt.Errorf("GetAllCommands: scan row failed %w", err)
@@ -79,10 +89,10 @@ func (r *Repository) GetAllCommands(ctx context.Context) ([]*command.Command, er
 }
 
 // GetCommandByName gets and returns the requested by name command from the storage.
-func (r *Repository) GetCommandByName(ctx context.Context, name string) (*command.Command, error) {
+func (r *CommandRepository) GetCommandByName(ctx context.Context, name string) (*entities.Command, error) {
 	row := r.db.QueryRowContext(ctx, `SELECT id, name, script FROM commands WHERE name = $1`, name)
 
-	var c command.Command
+	var c entities.Command
 	err := row.Scan(&c.ID, &c.Name, &c.Script)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

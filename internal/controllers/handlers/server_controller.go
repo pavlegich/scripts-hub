@@ -1,5 +1,7 @@
 // Package handlers contains server controller object and
-// methods for building the server route.
+// methods for building the server route, command functions
+// for activating the command handler in controller
+// and commands handlers.
 package handlers
 
 import (
@@ -8,7 +10,6 @@ import (
 	"net/http"
 
 	"github.com/pavlegich/scripts-hub/internal/controllers/middlewares"
-	commands "github.com/pavlegich/scripts-hub/internal/domains/command/controllers/http"
 	"github.com/pavlegich/scripts-hub/internal/infra/config"
 )
 
@@ -41,7 +42,7 @@ func (c *Controller) BuildRoute(ctx context.Context) (*http.Handler, error) {
 		w.Write([]byte("Hello, world!"))
 	})
 
-	commands.Activate(ctx, router, c.cfg, c.db)
+	Activate(ctx, router, c.cfg, c.db)
 
 	handler := middlewares.Recovery(router)
 	handler = middlewares.WithLogging(handler)

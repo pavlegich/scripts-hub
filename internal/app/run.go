@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/golang/mock/mockgen/model"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pavlegich/scripts-hub/internal/controllers/handlers"
 	"github.com/pavlegich/scripts-hub/internal/infra/config"

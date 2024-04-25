@@ -1,7 +1,4 @@
-// Package http contains object of command functions
-// for activating the command handler in controller
-// and commands handlers.
-package http
+package handlers
 
 import (
 	"bytes"
@@ -14,11 +11,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pavlegich/scripts-hub/internal/domains/command"
-	repo "github.com/pavlegich/scripts-hub/internal/domains/command/repository"
+	"github.com/pavlegich/scripts-hub/internal/entities"
 	errs "github.com/pavlegich/scripts-hub/internal/errors"
 	"github.com/pavlegich/scripts-hub/internal/infra/config"
 	"github.com/pavlegich/scripts-hub/internal/infra/logger"
+	repo "github.com/pavlegich/scripts-hub/internal/repository"
+	"github.com/pavlegich/scripts-hub/internal/service/command"
 	"go.uber.org/zap"
 )
 
@@ -72,7 +70,7 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 
 	ctx := r.Context()
 
-	var req command.Command
+	var req entities.Command
 	var buf bytes.Buffer
 
 	_, err := buf.ReadFrom(r.Body)
@@ -142,7 +140,7 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 func (h *CommandHandler) HandleGetCommand(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	var req command.Command
+	var req entities.Command
 	want := map[string]struct{}{
 		"name": {},
 	}
