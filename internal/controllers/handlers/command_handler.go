@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/pavlegich/scripts-hub/internal/entities"
 	errs "github.com/pavlegich/scripts-hub/internal/errors"
@@ -21,6 +22,7 @@ import (
 
 // CommandHandler contains objects for work with command handlers.
 type CommandHandler struct {
+	procs   *sync.Map
 	Config  *config.Config
 	Service command.Service
 }
@@ -34,6 +36,7 @@ func commandsActivate(ctx context.Context, r *http.ServeMux, repo repository.Rep
 // newHandler initializes handler for command object.
 func newHandler(r *http.ServeMux, cfg *config.Config, s command.Service) {
 	h := &CommandHandler{
+		procs:   &sync.Map{},
 		Config:  cfg,
 		Service: s,
 	}
@@ -49,6 +52,8 @@ func (h *CommandHandler) HandleCommand(w http.ResponseWriter, r *http.Request) {
 		h.HandleCreateCommand(w, r)
 	case http.MethodGet:
 		h.HandleGetCommand(w, r)
+	case http.MethodDelete:
+		h.HandleDeleteCommand(w, r)
 	default:
 		logger.Log.Error("HandleCommand: incorrect method",
 			zap.String("method", r.Method))
@@ -94,6 +99,7 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 
 	bashCmd := strings.Split(req.Script, " ")
 	cmd := exec.CommandContext(ctx, bashCmd[0], bashCmd[1:]...)
+	h.procs.Store(req.Name, cmd)
 	err = cmd.Start()
 	if err != nil {
 		logger.Log.Error("HandleCreateCommand: start command failed",
@@ -230,4 +236,78 @@ func (h *CommandHandler) HandleCommands(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(cmdsJSON)
+}
+
+// HandleDeleteCommand handles request to get the requested command.
+func (h *CommandHandler) HandleDeleteCommand(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var req string
+	want := map[string]struct{}{
+		"name": {},
+	}
+
+	queries := r.URL.Query()
+	for val := range queries {
+		_, ok := want[val]
+		if !ok {
+			logger.Log.Error("HandleDeleteCommand: incorrect query",
+				zap.String("query", val))
+
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		if len(queries[val]) != 1 {
+			logger.Log.Error("HandleDeleteCommand: incorrect number of queries",
+				zap.Int("queries_count", len(queries)))
+
+			w.WriteHeader(http.StatusBadRequest)
+		}
+
+		req = queries[val][0]
+	}
+
+	err := h.Service.Delete(ctx, req)
+	if err != nil {
+		logger.Log.With(zap.String("cmd_name", req)).
+			Error("HandleDeleteCommand: delete command failed", zap.Error(err))
+
+		if errors.Is(err, errs.ErrCmdNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	val, loaded := h.procs.LoadAndDelete(req)
+	if !loaded {
+		logger.Log.With(zap.String("cmd_name", req)).
+			Error("HandleDeleteCommand: load command from map failed", zap.Error(err))
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	cmd, ok := val.(*exec.Cmd)
+	if !ok {
+		logger.Log.With(zap.String("cmd_name", req)).
+			Error("HandleDeleteCommand: asserting command failed", zap.Error(err))
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	err = cmd.Cancel()
+	if err != nil {
+		logger.Log.With(zap.String("cmd_name", req)).
+			Error("HandleDeleteCommand: cancel command failed", zap.Error(err))
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

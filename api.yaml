@@ -57,10 +57,29 @@ paths:
                   command_id:
                     type: integer
                     description: Идентификатор созданной команды
+                example: '{"ID": 1}'
         '400':
           description: Некорректные данные
         '409':
           description: Команда уже существует
+        '500':
+          description: Внутренняя ошибка сервера
+    delete:
+      summary: Остановка команды
+      parameters:
+        - in: query
+          name: name
+          required: true
+          schema:
+            type: string
+            description: Название команды
+      responses:
+        '204':
+          description: Команда остановлена
+        '400':
+          description: Некорректные данные
+        '404':
+          description: Команда не найдена
         '500':
           description: Внутренняя ошибка сервера
   /commands:
@@ -75,10 +94,10 @@ paths:
                 description: JSON-отображение команд
                 type: object
                 additionalProperties: true
-                example: '{
+                example: '[
                   {"id": 1, "name": "new", "script": "ls -la"},
                   {"id": 2, "name": "second", "script": "pwd"}
-                }'
+                ]'
         '400':
           description: Некорректные данные
         '404':

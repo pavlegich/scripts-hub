@@ -22,6 +22,7 @@ type Repository interface {
 	CreateCommand(ctx context.Context, command *entities.Command) (*entities.Command, error)
 	GetAllCommands(ctx context.Context) ([]*entities.Command, error)
 	GetCommandByName(ctx context.Context, name string) (*entities.Command, error)
+	DeleteCommandByName(ctx context.Context, name string) error
 }
 
 // CommandRepository contains storage objects for storing the commands.
@@ -111,4 +112,23 @@ func (r *CommandRepository) GetCommandByName(ctx context.Context, name string) (
 	}
 
 	return &c, nil
+}
+
+// DeleteCommandByName deletes command from the storage and returns it.
+func (r *CommandRepository) DeleteCommandByName(ctx context.Context, name string) error {
+	res, err := r.db.ExecContext(ctx, `DELETE FROM commands WHERE name = $1`, name)
+
+	if err != nil {
+		return fmt.Errorf("DeleteCommandByName: delete command failed %w", err)
+	}
+
+	rowsCount, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("DeleteCommandByName: couldn't get rows affected %w", err)
+	}
+	if rowsCount == 0 {
+		return fmt.Errorf("DeleteCommandByName: nothing to delete, %w", errs.ErrCmdNotFound)
+	}
+
+	return nil
 }

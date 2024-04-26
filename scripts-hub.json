@@ -57,6 +57,29 @@
 			}
 		},
 		{
+			"name": "Delete /command",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/command",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"command"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "new"
+						}
+					]
+				},
+				"description": "Delete requested command."
+			}
+		},
+		{
 			"name": "Get /commands",
 			"request": {
 				"method": "GET",

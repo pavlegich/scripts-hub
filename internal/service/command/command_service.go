@@ -16,6 +16,7 @@ type Service interface {
 	Create(ctx context.Context, command *entities.Command) (int, error)
 	List(ctx context.Context) ([]*entities.Command, error)
 	Unload(ctx context.Context, name string) (*entities.Command, error)
+	Delete(ctx context.Context, name string) error
 }
 
 // CommandService contains objects for command service.
@@ -58,4 +59,14 @@ func (s *CommandService) Unload(ctx context.Context, name string) (*entities.Com
 	}
 
 	return cmd, nil
+}
+
+// Delete delete command from the DB and returns it.
+func (s *CommandService) Delete(ctx context.Context, name string) error {
+	err := s.repo.DeleteCommandByName(ctx, name)
+	if err != nil {
+		return fmt.Errorf("Delete: delete command failed %w", err)
+	}
+
+	return nil
 }
