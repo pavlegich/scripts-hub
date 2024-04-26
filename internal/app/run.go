@@ -16,6 +16,7 @@ import (
 	"github.com/pavlegich/scripts-hub/internal/infra/config"
 	"github.com/pavlegich/scripts-hub/internal/infra/database"
 	"github.com/pavlegich/scripts-hub/internal/infra/logger"
+	"github.com/pavlegich/scripts-hub/internal/repository"
 	_ "go.uber.org/automaxprocs"
 	"go.uber.org/zap"
 )
@@ -49,7 +50,8 @@ func Run() error {
 	defer db.Close()
 
 	// Router
-	ctrl := handlers.NewController(ctx, db, cfg)
+	repo := repository.NewCommandRepository(ctx, db)
+	ctrl := handlers.NewController(ctx, repo, cfg)
 	router, err := ctrl.BuildRoute(ctx)
 	if err != nil {
 		return fmt.Errorf("Run: build server route failed %w", err)

@@ -32,7 +32,7 @@ var Log *zap.Logger = zap.NewNop()
 func Init(ctx context.Context, level string) error {
 	lvl, err := zap.ParseAtomicLevel(level)
 	if err != nil {
-		return fmt.Errorf("Init: parse level errors %w", err)
+		return fmt.Errorf("Init: parse level error %w", err)
 	}
 	cfg := zap.NewProductionConfig()
 	cfg.Level = lvl

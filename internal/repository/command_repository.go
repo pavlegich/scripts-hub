@@ -80,6 +80,10 @@ func (r *CommandRepository) GetAllCommands(ctx context.Context) ([]*entities.Com
 		cmdsList = append(cmdsList, &c)
 	}
 
+	if len(cmdsList) == 0 {
+		return nil, fmt.Errorf("GetAllCommands: nothing to return %w", errs.ErrCmdNotFound)
+	}
+
 	err = rows.Err()
 	if err != nil {
 		return nil, fmt.Errorf("GetAllCommands: rows.Err %w", err)

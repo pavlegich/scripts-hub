@@ -18,4 +18,4 @@ SELECT 'down SQL query';
 -- +goose StatementEnd
 
 DROP INDEX command_name_idx;
-DROP TABLE users;
+DROP TABLE commands;

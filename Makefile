@@ -39,6 +39,7 @@ test:
 test/cover:
 	go test ./... -coverprofile=/tmp/coverage.out
 	go tool cover -html=/tmp/coverage.out
+	rm /tmp/coverage.out
 
 ## build-local: build the server locally
 build-local:

@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -15,7 +14,7 @@ import (
 	errs "github.com/pavlegich/scripts-hub/internal/errors"
 	"github.com/pavlegich/scripts-hub/internal/infra/config"
 	"github.com/pavlegich/scripts-hub/internal/infra/logger"
-	repo "github.com/pavlegich/scripts-hub/internal/repository"
+	"github.com/pavlegich/scripts-hub/internal/repository"
 	"github.com/pavlegich/scripts-hub/internal/service/command"
 	"go.uber.org/zap"
 )
@@ -26,9 +25,9 @@ type CommandHandler struct {
 	Service command.Service
 }
 
-// Activate activates handler for command object.
-func Activate(ctx context.Context, r *http.ServeMux, cfg *config.Config, db *sql.DB) {
-	s := command.NewCommandService(ctx, repo.NewCommandRepository(ctx, db))
+// commandsActivate activates handler for command object.
+func commandsActivate(ctx context.Context, r *http.ServeMux, repo repository.Repository, cfg *config.Config) {
+	s := command.NewCommandService(ctx, repo)
 	newHandler(r, cfg, s)
 }
 
