@@ -1,0 +1,87 @@
+openapi: 3.0.0
+info:
+  title: Сервис запуска команд
+  version: 1.0.0
+paths:
+  /command:
+    get:
+      summary: Получение существующей команды
+      parameters:
+        - in: query
+          name: name
+          required: true
+          schema:
+            type: string
+            description: Название команды
+      responses:
+        '200':
+          description: Команда
+          content:
+            application/json:
+              schema:
+                description: JSON-отображение команды
+                type: object
+                additionalProperties: true
+                example: '{"id": 1, "name": "new", "script": "ls -la"}'
+        '400':
+          description: Некорректные данные
+        '404':
+          description: Команда не найдена
+        '500':
+          description: Внутренняя ошибка сервера
+    post:
+      summary: Запуск новой команды
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Название команды
+                  items:
+                    type: string
+                script:
+                  type: string
+                  description: Команда
+      responses:
+        '201':
+          description: Создана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  command_id:
+                    type: integer
+                    description: Идентификатор созданной команды
+        '400':
+          description: Некорректные данные
+        '409':
+          description: Команда уже существует
+        '500':
+          description: Внутренняя ошибка сервера
+  /commands:
+    get:
+      summary: Получение списка команды
+      responses:
+        '200':
+          description: Команды
+          content:
+            application/json:
+              schema:
+                description: JSON-отображение команд
+                type: object
+                additionalProperties: true
+                example: '{
+                  {"id": 1, "name": "new", "script": "ls -la"},
+                  {"id": 2, "name": "second", "script": "pwd"}
+                }'
+        '400':
+          description: Некорректные данные
+        '404':
+          description: Команды не найдены
+        '500':
+          description: Внутренняя ошибка сервера

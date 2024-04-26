@@ -1,0 +1,77 @@
+{
+	"info": {
+		"_postman_id": "b5813c1d-4c99-49ed-aef4-f955f8c04013",
+		"name": "scripts-hub",
+		"description": "Postman collection with request examples to banners-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28853335"
+	},
+	"item": [
+		{
+			"name": "Post /command",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"name\": \"new\",\n    \"script\": \"ls -la\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/command",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"command"
+					]
+				},
+				"description": "Create the command."
+			}
+		},
+		{
+			"name": "Get /command",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/command?name=new",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"command"
+					],
+					"query": [
+						{
+							"key": "name",
+							"value": "new"
+						}
+					]
+				},
+				"description": "Get the command by requested name."
+			}
+		},
+		{
+			"name": "Get /commands",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/commands",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"commands"
+					]
+				},
+				"description": "Get list of existed commands."
+			}
+		}
+	]
+}
