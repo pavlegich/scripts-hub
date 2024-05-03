@@ -232,3 +232,51 @@ func TestCommandService_Unload(t *testing.T) {
 		})
 	}
 }
+
+func TestCommandService_Delete(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockRepo := mocks.NewMockRepository(mockCtrl)
+	s := NewCommandService(ctx, mockRepo)
+
+	type expected struct {
+		err error
+	}
+	type args struct {
+		name string
+	}
+	tests := []struct {
+		name     string
+		args     args
+		expected expected
+		wantErr  error
+	}{
+		{
+			name: "success",
+			args: args{
+				name: "ok",
+			},
+			expected: expected{
+				err: nil,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "no_data_in_db",
+			expected: expected{
+				err: errs.ErrCmdNotFound,
+			},
+			wantErr: errs.ErrCmdNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo.EXPECT().DeleteCommandByName(gomock.Any(), gomock.Any()).
+				Return(tt.expected.err).Times(1)
+
+			err := s.Delete(ctx, tt.args.name)
+
+			require.ErrorIs(t, err, tt.wantErr)
+		})
+	}
+}
