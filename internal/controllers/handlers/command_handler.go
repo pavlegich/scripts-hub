@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/pavlegich/scripts-hub/internal/entities"
@@ -97,6 +98,22 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	bashCmd := strings.Split(req.Script, " ")
+
+	cmd := exec.CommandContext(ctx, bashCmd[0], bashCmd[1:]...)
+	if cmd.Err != nil {
+		logger.Log.With(zap.String("cmd_name", req.Name)).Error("HandleCreateCommand: set command failed",
+			zap.Error(err), zap.String("cmd", req.Script))
+
+		if errors.Is(cmd.Err, exec.ErrNotFound) {
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	commandID, err := h.Service.Create(ctx, &req)
 	if err != nil {
 		logger.Log.Error("HandleCreateCommand: create command failed",
@@ -111,7 +128,8 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	go h.RunCommand(req.Name, req.Script)
+	h.procs.Store(req.Name, cmd)
+	go h.RunCommand(req.Name, cmd)
 
 	resp := map[string]string{
 		"command_id": strconv.Itoa(commandID),
