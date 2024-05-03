@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"os/exec"
@@ -15,32 +14,27 @@ import (
 
 // CommandWriter contains data for writing the command.
 type CommandWriter struct {
-	name    string
-	buf     *bytes.Buffer
+	cmd     *entities.Command
 	service command.Service
 }
 
 // NewCommandWriter returns new CommandWriter object.
 func NewCommandWriter(ctx context.Context, name string, service command.Service) *CommandWriter {
 	return &CommandWriter{
-		name:    name,
-		buf:     &bytes.Buffer{},
+		cmd: &entities.Command{
+			Name: name,
+		},
 		service: service,
 	}
 }
 
 // Write implements writing the data into the storage.
 func (w *CommandWriter) Write(d []byte) (int, error) {
-	w.buf.Write(d)
+	w.cmd.Output = string(d)
 
-	cmd := &entities.Command{
-		Name:   w.name,
-		Output: w.buf.String(),
-	}
-
-	err := w.service.Update(context.Background(), cmd)
+	err := w.service.AppendOutput(context.Background(), w.cmd)
 	if err != nil {
-		return -1, fmt.Errorf("Write: update command failed %w", err)
+		return -1, fmt.Errorf("Write: append command output failed %w", err)
 	}
 
 	return len(d), nil

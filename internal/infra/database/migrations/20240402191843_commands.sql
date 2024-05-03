@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS commands (
     id serial PRIMARY KEY,
     name varchar(32) UNIQUE NOT NULL,
     script text,
-    output bytea
+    output bytea DEFAULT ''::bytea
 );
 
 -- create indexes

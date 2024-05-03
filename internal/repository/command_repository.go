@@ -22,7 +22,7 @@ type Repository interface {
 	CreateCommand(ctx context.Context, command *entities.Command) (*entities.Command, error)
 	GetAllCommands(ctx context.Context) ([]*entities.Command, error)
 	GetCommandByName(ctx context.Context, name string) (*entities.Command, error)
-	UpdateCommandByName(ctx context.Context, command *entities.Command) error
+	AppendCommandOutputByName(ctx context.Context, command *entities.Command) error
 	DeleteCommandByName(ctx context.Context, name string) error
 }
 
@@ -115,20 +115,37 @@ func (r *CommandRepository) GetCommandByName(ctx context.Context, name string) (
 	return &c, nil
 }
 
-// UpdateCommand updates requested command in the storage.
-func (r *CommandRepository) UpdateCommandByName(ctx context.Context, c *entities.Command) error {
-	res, err := r.db.ExecContext(ctx, `UPDATE commands SET output = $1 WHERE name = $2`, c.Output, c.Name)
-
+// AppendCommandOutputByName updates output for requested command in the storage.
+func (r *CommandRepository) AppendCommandOutputByName(ctx context.Context, c *entities.Command) error {
+	tx, err := r.db.Begin()
 	if err != nil {
-		return fmt.Errorf("UpdateCommandByName: update command failed %w", err)
+		return fmt.Errorf("AppendCommandOutputByName: begin transaction failed %w", err)
+	}
+	defer tx.Rollback()
+
+	row := tx.QueryRowContext(ctx, `SELECT output FROM commands WHERE name = $1`, c.Name)
+	var out string
+	err = row.Scan(&out)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return fmt.Errorf("AppendCommandOutputByName: nothing to get, %w", errs.ErrCmdNotFound)
+		}
+		return fmt.Errorf("AppendCommandOutputByName: scan row failed %w", err)
 	}
 
-	rowsCount, err := res.RowsAffected()
+	err = row.Err()
 	if err != nil {
-		return fmt.Errorf("UpdateCommandByName: couldn't get rows affected %w", err)
+		return fmt.Errorf("AppendCommandOutputByName: row.Err %w", err)
 	}
-	if rowsCount == 0 {
-		return fmt.Errorf("UpdateCommandByName: nothing to update, %w", errs.ErrCmdNotFound)
+
+	c.Output = out + c.Output
+	_, err = tx.ExecContext(ctx, `UPDATE commands SET output = $1 WHERE name = $2`, c.Output, c.Name)
+	if err != nil {
+		return fmt.Errorf("AppendCommandOutputByName: update command failed %w", err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("AppendCommandOutputByName: commit transaction failed %w", err)
 	}
 
 	return nil

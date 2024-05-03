@@ -16,7 +16,7 @@ type Service interface {
 	Create(ctx context.Context, command *entities.Command) (int, error)
 	List(ctx context.Context) ([]*entities.Command, error)
 	Unload(ctx context.Context, name string) (*entities.Command, error)
-	Update(ctx context.Context, command *entities.Command) error
+	AppendOutput(ctx context.Context, command *entities.Command) error
 	Delete(ctx context.Context, name string) error
 }
 
@@ -62,11 +62,11 @@ func (s *CommandService) Unload(ctx context.Context, name string) (*entities.Com
 	return cmd, nil
 }
 
-// Update updates command by command's name.
-func (s *CommandService) Update(ctx context.Context, c *entities.Command) error {
-	err := s.repo.UpdateCommandByName(ctx, c)
+// AppendOutput appends output for command by command's name.
+func (s *CommandService) AppendOutput(ctx context.Context, c *entities.Command) error {
+	err := s.repo.AppendCommandOutputByName(ctx, c)
 	if err != nil {
-		return fmt.Errorf("Update: update command failed %w", err)
+		return fmt.Errorf("UpdateOutput: update command failed %w", err)
 	}
 
 	return nil

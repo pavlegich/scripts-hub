@@ -35,6 +35,20 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
+// AppendOutput mocks base method.
+func (m *MockService) AppendOutput(arg0 context.Context, arg1 *entities.Command) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AppendOutput", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AppendOutput indicates an expected call of AppendOutput.
+func (mr *MockServiceMockRecorder) AppendOutput(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AppendOutput", reflect.TypeOf((*MockService)(nil).AppendOutput), arg0, arg1)
+}
+
 // Create mocks base method.
 func (m *MockService) Create(arg0 context.Context, arg1 *entities.Command) (int, error) {
 	m.ctrl.T.Helper()
@@ -92,18 +106,4 @@ func (m *MockService) Unload(arg0 context.Context, arg1 string) (*entities.Comma
 func (mr *MockServiceMockRecorder) Unload(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unload", reflect.TypeOf((*MockService)(nil).Unload), arg0, arg1)
-}
-
-// Update mocks base method.
-func (m *MockService) Update(arg0 context.Context, arg1 *entities.Command) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Update indicates an expected call of Update.
-func (mr *MockServiceMockRecorder) Update(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockService)(nil).Update), arg0, arg1)
 }

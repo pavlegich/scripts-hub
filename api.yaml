@@ -22,7 +22,7 @@ paths:
                 description: JSON-отображение команды
                 type: object
                 additionalProperties: true
-                example: '{"id": 1, "name": "new", "script": "ls -la"}'
+                example: '{"id": 1, "name": "pwd", "script": "pwd", "output": "/path"}'
         '400':
           description: Некорректные данные
         '404':
@@ -95,8 +95,8 @@ paths:
                 type: object
                 additionalProperties: true
                 example: '[
-                  {"id": 1, "name": "new", "script": "ls -la"},
-                  {"id": 2, "name": "second", "script": "pwd"}
+                  {"id": 1, "name": "ls", "script": "ls", "output": "Documents"},
+                  {"id": 2, "name": "pwd", "script": "pwd", "output": "/path"}
                 ]'
         '400':
           description: Некорректные данные

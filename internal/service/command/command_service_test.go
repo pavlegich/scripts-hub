@@ -336,10 +336,10 @@ func TestCommandService_Update(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo.EXPECT().UpdateCommandByName(gomock.Any(), gomock.Any()).
+			mockRepo.EXPECT().AppendCommandOutputByName(gomock.Any(), gomock.Any()).
 				Return(tt.expected.err).Times(1)
 
-			err := s.Update(ctx, tt.args.command)
+			err := s.AppendOutput(ctx, tt.args.command)
 
 			require.ErrorIs(t, err, tt.wantErr)
 		})
