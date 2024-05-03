@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
-	"strings"
 	"sync"
 
 	"github.com/pavlegich/scripts-hub/internal/entities"
@@ -24,7 +23,6 @@ import (
 // CommandHandler contains objects for work with command handlers.
 type CommandHandler struct {
 	procs   *sync.Map
-	out     []byte
 	Config  *config.Config
 	Service command.Service
 }
@@ -38,7 +36,6 @@ func commandsActivate(ctx context.Context, r *http.ServeMux, repo repository.Rep
 // newHandler initializes handler for command object.
 func newHandler(r *http.ServeMux, cfg *config.Config, s command.Service) {
 	h := &CommandHandler{
-		out:     make([]byte, 0),
 		procs:   &sync.Map{},
 		Config:  cfg,
 		Service: s,
@@ -114,43 +111,7 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	bashCmd := strings.Split(req.Script, " ")
-
-	cmd := exec.CommandContext(context.Background(), bashCmd[0], bashCmd[1:]...)
-	h.procs.Store(req.Name, cmd)
-
-	err = cmd.Start()
-	if err != nil {
-		logger.Log.Error("HandleCreateCommand: start command failed",
-			zap.Error(err))
-
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	// go func(script string) {
-	// 	bashCmd := strings.Split(script, " ")
-
-	// 	cmd := exec.CommandContext(context.Background(), bashCmd[0], bashCmd[1:]...)
-	// 	h.procs.Store(req.Name, cmd)
-
-	// 	var b bytes.Buffer
-
-	// 	cmd.Stdout = &b
-	// 	cmd.Stderr = &b
-
-	// 	err = cmd.Run()
-
-	// 	if err != nil {
-	// 		logger.Log.Error("HandleCreateCommand: start command failed",
-	// 			zap.Error(err))
-
-	// 		// w.WriteHeader(http.StatusBadRequest)
-	// 		return
-	// 	}
-
-	// 	h.out = b.Bytes()
-	// }(req.Script)
+	go h.RunCommand(req.Name, req.Script)
 
 	resp := map[string]string{
 		"command_id": strconv.Itoa(commandID),
@@ -330,14 +291,9 @@ func (h *CommandHandler) HandleDeleteCommand(w http.ResponseWriter, r *http.Requ
 	}
 
 	err = cmd.Cancel()
-	if err != nil {
+	if err != nil && !errors.Is(err, os.ErrProcessDone) {
 		logger.Log.With(zap.String("cmd_name", cmdName)).
 			Error("HandleDeleteCommand: cancel command failed", zap.Error(err))
-
-		if errors.Is(err, os.ErrProcessDone) {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
 
 		w.WriteHeader(http.StatusInternalServerError)
 		return

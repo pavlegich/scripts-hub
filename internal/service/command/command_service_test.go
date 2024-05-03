@@ -212,6 +212,9 @@ func TestCommandService_Unload(t *testing.T) {
 		},
 		{
 			name: "no_data_in_db",
+			args: args{
+				name: "nothing",
+			},
 			expected: expected{
 				cmd: nil,
 				err: errs.ErrCmdNotFound,
@@ -263,6 +266,9 @@ func TestCommandService_Delete(t *testing.T) {
 		},
 		{
 			name: "no_data_in_db",
+			args: args{
+				name: "nothing",
+			},
 			expected: expected{
 				err: errs.ErrCmdNotFound,
 			},
@@ -275,6 +281,65 @@ func TestCommandService_Delete(t *testing.T) {
 				Return(tt.expected.err).Times(1)
 
 			err := s.Delete(ctx, tt.args.name)
+
+			require.ErrorIs(t, err, tt.wantErr)
+		})
+	}
+}
+
+func TestCommandService_Update(t *testing.T) {
+	ctx := context.Background()
+	mockCtrl := gomock.NewController(t)
+	mockRepo := mocks.NewMockRepository(mockCtrl)
+	s := NewCommandService(ctx, mockRepo)
+
+	type expected struct {
+		err error
+	}
+	type args struct {
+		command *entities.Command
+	}
+	tests := []struct {
+		name     string
+		args     args
+		expected expected
+		wantErr  error
+	}{
+		{
+			name: "success",
+			args: args{
+				command: &entities.Command{
+					Name:   "ok",
+					Script: "pwd",
+					Output: "/path",
+				},
+			},
+			expected: expected{
+				err: nil,
+			},
+			wantErr: nil,
+		},
+		{
+			name: "no_data_in_db",
+			args: args{
+				command: &entities.Command{
+					Name:   "nothing",
+					Script: "pwd",
+					Output: "/nopath",
+				},
+			},
+			expected: expected{
+				err: errs.ErrCmdNotFound,
+			},
+			wantErr: errs.ErrCmdNotFound,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo.EXPECT().UpdateCommandByName(gomock.Any(), gomock.Any()).
+				Return(tt.expected.err).Times(1)
+
+			err := s.Update(ctx, tt.args.command)
 
 			require.ErrorIs(t, err, tt.wantErr)
 		})

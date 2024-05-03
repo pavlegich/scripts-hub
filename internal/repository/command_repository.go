@@ -22,6 +22,7 @@ type Repository interface {
 	CreateCommand(ctx context.Context, command *entities.Command) (*entities.Command, error)
 	GetAllCommands(ctx context.Context) ([]*entities.Command, error)
 	GetCommandByName(ctx context.Context, name string) (*entities.Command, error)
+	UpdateCommandByName(ctx context.Context, command *entities.Command) error
 	DeleteCommandByName(ctx context.Context, name string) error
 }
 
@@ -65,7 +66,7 @@ func (r *CommandRepository) CreateCommand(ctx context.Context, c *entities.Comma
 
 // GetAllCommands gets and returns all the commands from the storage.
 func (r *CommandRepository) GetAllCommands(ctx context.Context) ([]*entities.Command, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id, name, script FROM commands`)
+	rows, err := r.db.QueryContext(ctx, `SELECT id, name, script, output FROM commands`)
 	if err != nil {
 		return nil, fmt.Errorf("GetAllCommands: read rows from table failed %w", err)
 	}
@@ -74,7 +75,7 @@ func (r *CommandRepository) GetAllCommands(ctx context.Context) ([]*entities.Com
 	cmdsList := make([]*entities.Command, 0)
 	for rows.Next() {
 		var c entities.Command
-		err = rows.Scan(&c.ID, &c.Name, &c.Script)
+		err = rows.Scan(&c.ID, &c.Name, &c.Script, &c.Output)
 		if err != nil {
 			return nil, fmt.Errorf("GetAllCommands: scan row failed %w", err)
 		}
@@ -95,10 +96,10 @@ func (r *CommandRepository) GetAllCommands(ctx context.Context) ([]*entities.Com
 
 // GetCommandByName gets and returns the requested by name command from the storage.
 func (r *CommandRepository) GetCommandByName(ctx context.Context, name string) (*entities.Command, error) {
-	row := r.db.QueryRowContext(ctx, `SELECT id, name, script FROM commands WHERE name = $1`, name)
+	row := r.db.QueryRowContext(ctx, `SELECT id, name, script, output FROM commands WHERE name = $1`, name)
 
 	var c entities.Command
-	err := row.Scan(&c.ID, &c.Name, &c.Script)
+	err := row.Scan(&c.ID, &c.Name, &c.Script, &c.Output)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("GetCommandByName: nothing to get, %w", errs.ErrCmdNotFound)
@@ -112,6 +113,25 @@ func (r *CommandRepository) GetCommandByName(ctx context.Context, name string) (
 	}
 
 	return &c, nil
+}
+
+// UpdateCommand updates requested command in the storage.
+func (r *CommandRepository) UpdateCommandByName(ctx context.Context, c *entities.Command) error {
+	res, err := r.db.ExecContext(ctx, `UPDATE commands SET output = $1 WHERE name = $2`, c.Output, c.Name)
+
+	if err != nil {
+		return fmt.Errorf("UpdateCommandByName: update command failed %w", err)
+	}
+
+	rowsCount, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("UpdateCommandByName: couldn't get rows affected %w", err)
+	}
+	if rowsCount == 0 {
+		return fmt.Errorf("UpdateCommandByName: nothing to update, %w", errs.ErrCmdNotFound)
+	}
+
+	return nil
 }
 
 // DeleteCommandByName deletes command from the storage and returns it.

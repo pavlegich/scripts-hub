@@ -93,3 +93,17 @@ func (mr *MockRepositoryMockRecorder) GetCommandByName(arg0, arg1 interface{}) *
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCommandByName", reflect.TypeOf((*MockRepository)(nil).GetCommandByName), arg0, arg1)
 }
+
+// UpdateCommandByName mocks base method.
+func (m *MockRepository) UpdateCommandByName(arg0 context.Context, arg1 *entities.Command) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateCommandByName", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateCommandByName indicates an expected call of UpdateCommandByName.
+func (mr *MockRepositoryMockRecorder) UpdateCommandByName(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateCommandByName", reflect.TypeOf((*MockRepository)(nil).UpdateCommandByName), arg0, arg1)
+}
