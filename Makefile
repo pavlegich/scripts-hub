@@ -1,4 +1,5 @@
 DATABASE_DSN = postgresql://localhost:5432/postgres
+RATE_LIMIT = 3
 
 DOC_PORT = 6060
 
@@ -47,7 +48,7 @@ build-local:
 
 ## run-local: run the server locally
 run-local: build-local
-	/tmp/bin/$(SERVER_BINARY_NAME) -a=$(SERVER_ADDR) -d=$(DATABASE_DSN)
+	/tmp/bin/$(SERVER_BINARY_NAME) -a=$(SERVER_ADDR) -d=$(DATABASE_DSN) -l=$(RATE_LIMIT)
 
 ## build-docker: build the server with docker-compose
 build-docker:

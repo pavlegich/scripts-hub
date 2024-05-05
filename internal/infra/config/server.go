@@ -12,8 +12,9 @@ import (
 
 // Config contains values of server flags and environments.
 type Config struct {
-	Address string `env:"ADDRESS" json:"address"`
-	DSN     string `env:"DATABASE_DSN" json:"database_dsn"`
+	Address   string `env:"ADDRESS" json:"address"`
+	DSN       string `env:"DATABASE_DSN" json:"database_dsn"`
+	RateLimit int    `env:"RATE_LIMIT" json:"rate_limit"`
 }
 
 // NewConfig returns new server config.
@@ -26,6 +27,7 @@ func NewConfig(ctx context.Context) *Config {
 func (cfg *Config) ParseFlags(ctx context.Context) error {
 	flag.StringVar(&cfg.Address, "a", "localhost:8080", "HTTP-server endpoint address host:port")
 	flag.StringVar(&cfg.DSN, "d", "postgresql://localhost:5432/postgres", "URI (DSN) to database")
+	flag.IntVar(&cfg.RateLimit, "l", 3, "Run command workers limit")
 
 	flag.Parse()
 

@@ -23,6 +23,7 @@ import (
 
 // CommandHandler contains objects for work with command handlers.
 type CommandHandler struct {
+	jobs    chan entities.Command
 	procs   *sync.Map
 	Config  *config.Config
 	Service command.Service
@@ -31,12 +32,13 @@ type CommandHandler struct {
 // commandsActivate activates handler for command object.
 func commandsActivate(ctx context.Context, r *http.ServeMux, repo repository.Repository, cfg *config.Config) {
 	s := command.NewCommandService(ctx, repo)
-	newHandler(r, cfg, s)
+	newHandler(ctx, r, cfg, s)
 }
 
 // newHandler initializes handler for command object.
-func newHandler(r *http.ServeMux, cfg *config.Config, s command.Service) {
+func newHandler(ctx context.Context, r *http.ServeMux, cfg *config.Config, s command.Service) {
 	h := &CommandHandler{
+		jobs:    make(chan entities.Command),
 		procs:   &sync.Map{},
 		Config:  cfg,
 		Service: s,
@@ -44,6 +46,10 @@ func newHandler(r *http.ServeMux, cfg *config.Config, s command.Service) {
 
 	r.HandleFunc("/command", h.HandleCommand)
 	r.HandleFunc("/commands", h.HandleCommands)
+
+	for w := 1; w <= cfg.RateLimit; w++ {
+		go h.RunCommand(ctx)
+	}
 }
 
 // HandleCommand handles request to create or get the command.
@@ -131,7 +137,7 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	go h.RunCommand(req.Name, req.Script)
+	h.jobs <- req
 
 	resp := map[string]string{
 		"command_id": strconv.Itoa(commandID),
