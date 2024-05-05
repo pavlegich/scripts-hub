@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"strings"
 
 	"github.com/pavlegich/scripts-hub/internal/entities"
 	"github.com/pavlegich/scripts-hub/internal/infra/logger"
@@ -40,8 +41,21 @@ func (w *CommandWriter) Write(d []byte) (int, error) {
 }
 
 // RunCommand executes the command and stores the output.
-func (h *CommandHandler) RunCommand(name string, cmd *exec.Cmd) {
+func (h *CommandHandler) RunCommand(name string, script string) {
 	ctx := context.Background()
+
+	bashCmd := strings.Split(script, " ")
+
+	cmd := exec.CommandContext(ctx, bashCmd[0], bashCmd[1:]...)
+
+	if cmd.Err != nil {
+		logger.Log.With(zap.String("cmd_name", name)).Error("RunCommand: set command failed",
+			zap.Error(cmd.Err), zap.String("cmd", script))
+
+		return
+	}
+
+	h.procs.Store(name, cmd)
 
 	cmdWriter := NewCommandWriter(ctx, name, h.Service)
 
@@ -49,7 +63,6 @@ func (h *CommandHandler) RunCommand(name string, cmd *exec.Cmd) {
 	cmd.Stderr = cmdWriter
 
 	err := cmd.Start()
-	defer cmd.Process.Kill()
 	if err != nil {
 		logger.Log.With(zap.String("cmd_name", name)).Error("RunCommand: execute command failed",
 			zap.Error(err))
@@ -57,11 +70,11 @@ func (h *CommandHandler) RunCommand(name string, cmd *exec.Cmd) {
 		return
 	}
 
-	err = cmd.Wait()
-	if err != nil {
-		logger.Log.With(zap.String("cmd_name", name)).Error("RunCommand: wait command failed",
-			zap.Error(err))
+	// err = cmd.Wait()
+	// if err != nil {
+	// 	logger.Log.With(zap.String("cmd_name", name)).Error("RunCommand: wait command failed",
+	// 		zap.Error(err))
 
-		return
-	}
+	// 	return
+	// }
 }

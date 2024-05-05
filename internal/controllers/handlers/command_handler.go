@@ -98,19 +98,22 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	bashCmd := strings.Split(req.Script, " ")
-
-	cmd := exec.CommandContext(ctx, bashCmd[0], bashCmd[1:]...)
-	if cmd.Err != nil {
-		logger.Log.With(zap.String("cmd_name", req.Name)).Error("HandleCreateCommand: set command failed",
+	if req.Name == "" || req.Script == "" {
+		logger.Log.With(zap.String("cmd_name", req.Name)).Error("HandleCreateCommand: command name or script empty",
 			zap.Error(err), zap.String("cmd", req.Script))
 
-		if errors.Is(cmd.Err, exec.ErrNotFound) {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-		w.WriteHeader(http.StatusInternalServerError)
+	bashCmd := strings.Split(req.Script, " ")
+
+	_, err = exec.LookPath(bashCmd[0])
+	if err != nil {
+		logger.Log.With(zap.String("cmd_name", req.Name)).Error("HandleCreateCommand: look command path failed",
+			zap.Error(err), zap.String("cmd", req.Script))
+
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -128,8 +131,7 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	h.procs.Store(req.Name, cmd)
-	go h.RunCommand(req.Name, cmd)
+	go h.RunCommand(req.Name, req.Script)
 
 	resp := map[string]string{
 		"command_id": strconv.Itoa(commandID),

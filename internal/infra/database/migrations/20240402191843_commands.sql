@@ -6,7 +6,7 @@ SELECT 'up SQL query';
 CREATE TABLE IF NOT EXISTS commands (
     id serial PRIMARY KEY,
     name varchar(32) UNIQUE NOT NULL,
-    script text,
+    script text NOT NULL,
     output bytea DEFAULT ''::bytea
 );
 
