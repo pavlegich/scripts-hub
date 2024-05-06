@@ -1,4 +1,4 @@
-// Package entities contains command object.
+// Package entities contains objects for the application.
 package entities
 
 // Command contains data for commands.

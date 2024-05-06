@@ -40,15 +40,15 @@ func (w *CommandWriter) Write(d []byte) (int, error) {
 	return len(d), nil
 }
 
-// RunCommand executes the command and stores the output.
-func (h *CommandHandler) RunCommand(ctx context.Context) {
+// StartCommand executes the command and stores the output.
+func (h *CommandHandler) StartCommand(ctx context.Context) {
 	for {
 		select {
 		case <-ctx.Done():
 			return
 		case c, ok := <-h.jobs:
 			if !ok {
-				logger.Log.Error("RunCommand: channel is closed")
+				logger.Log.Error("StartCommand: channel is closed")
 				return
 			}
 
@@ -56,7 +56,7 @@ func (h *CommandHandler) RunCommand(ctx context.Context) {
 
 			cmd := exec.CommandContext(ctx, bashCmd[0], bashCmd[1:]...)
 			if cmd.Err != nil {
-				logger.Log.With(zap.String("cmd_name", c.Name)).Error("RunCommand: set command failed",
+				logger.Log.With(zap.String("cmd_name", c.Name)).Error("StartCommand: set command failed",
 					zap.Error(cmd.Err), zap.String("cmd", c.Script))
 
 				return
@@ -71,7 +71,7 @@ func (h *CommandHandler) RunCommand(ctx context.Context) {
 
 			err := cmd.Start()
 			if err != nil {
-				logger.Log.With(zap.String("cmd_name", c.Name)).Error("RunCommand: start command failed",
+				logger.Log.With(zap.String("cmd_name", c.Name)).Error("StartCommand: start command failed",
 					zap.Error(err), zap.String("cmd", c.Script))
 
 				return

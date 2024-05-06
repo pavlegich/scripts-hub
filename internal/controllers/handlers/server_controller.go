@@ -1,7 +1,7 @@
 // Package handlers contains server controller object and
 // methods for building the server route, command functions
 // for activating the command handler in controller
-// and commands handlers.
+// and command handlers.
 package handlers
 
 import (

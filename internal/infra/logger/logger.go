@@ -1,4 +1,5 @@
-// Package logger contains objects and methods for logging the events.
+// Package logger contains objects and methods for logger singleton initialization
+// and logging the events.
 package logger
 
 import (

@@ -1,3 +1,5 @@
+// Package command contains command service object and methods for interaction between
+// handlers and repositories.
 package command
 
 import (
@@ -72,7 +74,7 @@ func (s *CommandService) AppendOutput(ctx context.Context, c *entities.Command) 
 	return nil
 }
 
-// Delete delete command from the DB and returns it.
+// Delete deletes command from the DB and returns it.
 func (s *CommandService) Delete(ctx context.Context, name string) error {
 	err := s.repo.DeleteCommandByName(ctx, name)
 	if err != nil {

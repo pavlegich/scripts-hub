@@ -1,7 +1,7 @@
 DATABASE_DSN = postgresql://localhost:5432/postgres
 RATE_LIMIT = 3
 
-DOC_PORT = 6060
+DOC_ADDR = localhost:6060
 
 SERVER_BINARY_NAME = server
 SERVER_PACKAGE_PATH = ./cmd/server
@@ -64,7 +64,7 @@ run-docker: build-docker
 
 ## doc: generate documentation on http port
 doc:
-	@echo 'open http://localhost:$(DOC_PORT)/pkg/github.com/pavlegich/scripts-hub/?m=all'
-	godoc -http=:$(DOC_PORT)
+	@echo 'open http://$(DOC_ADDR)/pkg/github.com/pavlegich/scripts-hub/?m=all'
+	godoc -http=$(DOC_ADDR)
 
 .PHONY: help tidy build-local run-local build-docker run-docker doc test test/cover

@@ -48,7 +48,7 @@ func newHandler(ctx context.Context, r *http.ServeMux, cfg *config.Config, s com
 	r.HandleFunc("/commands", h.HandleCommands)
 
 	for w := 1; w <= cfg.RateLimit; w++ {
-		go h.RunCommand(ctx)
+		go h.StartCommand(ctx)
 	}
 }
 
