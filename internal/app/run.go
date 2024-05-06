@@ -60,7 +60,7 @@ func Run() error {
 	// Server
 	srv := &http.Server{
 		Addr:    cfg.Address,
-		Handler: *router,
+		Handler: router,
 	}
 
 	// Server graceful shutdown

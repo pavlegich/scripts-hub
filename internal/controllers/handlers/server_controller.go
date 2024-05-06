@@ -29,7 +29,7 @@ func NewController(ctx context.Context, repo repository.Repository, cfg *config.
 }
 
 // BuildRoute creates new router and appends handlers and middlewares to it.
-func (c *Controller) BuildRoute(ctx context.Context) (*http.Handler, error) {
+func (c *Controller) BuildRoute(ctx context.Context) (http.Handler, error) {
 	router := http.NewServeMux()
 
 	commandsActivate(ctx, router, c.repo, c.cfg)
@@ -37,5 +37,5 @@ func (c *Controller) BuildRoute(ctx context.Context) (*http.Handler, error) {
 	handler := middlewares.Recovery(router)
 	handler = middlewares.WithLogging(handler)
 
-	return &handler, nil
+	return handler, nil
 }

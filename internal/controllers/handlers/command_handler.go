@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -48,7 +47,7 @@ func newHandler(ctx context.Context, r *http.ServeMux, cfg *config.Config, s com
 	r.HandleFunc("/commands", h.HandleCommands)
 
 	for w := 1; w <= cfg.RateLimit; w++ {
-		go h.StartCommand(ctx)
+		go h.RunCommand(ctx)
 	}
 }
 
@@ -137,10 +136,12 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	h.jobs <- req
+	go func() {
+		h.jobs <- req
+	}()
 
-	resp := map[string]string{
-		"command_id": strconv.Itoa(commandID),
+	resp := map[string]int{
+		"command_id": commandID,
 	}
 	out, err := json.Marshal(resp)
 	if err != nil {
