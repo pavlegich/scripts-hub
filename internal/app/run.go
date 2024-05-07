@@ -13,6 +13,7 @@ import (
 	_ "github.com/golang/mock/mockgen/model"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pavlegich/scripts-hub/internal/controllers/handlers"
+	"github.com/pavlegich/scripts-hub/internal/entities"
 	"github.com/pavlegich/scripts-hub/internal/infra/config"
 	"github.com/pavlegich/scripts-hub/internal/infra/database"
 	"github.com/pavlegich/scripts-hub/internal/infra/logger"
@@ -50,9 +51,11 @@ func Run() error {
 	defer db.Close()
 
 	// Router
+	ctrl := handlers.NewController(ctx, cfg)
 	repo := repository.NewCommandRepository(ctx, db)
-	ctrl := handlers.NewController(ctx, repo, cfg)
-	router, err := ctrl.BuildRoute(ctx)
+	runCmdChan := make(chan entities.Command)
+
+	router, err := ctrl.BuildRoute(ctx, repo, runCmdChan)
 	if err != nil {
 		return fmt.Errorf("Run: build server route failed %w", err)
 	}
@@ -72,6 +75,8 @@ func Run() error {
 
 			logger.Log.Info("shutting down gracefully...",
 				zap.Error(ctx.Err()))
+
+			close(runCmdChan)
 
 			err := srv.Shutdown(ctxShutdown)
 			if err != nil {

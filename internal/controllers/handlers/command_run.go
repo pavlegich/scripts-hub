@@ -62,8 +62,6 @@ func (h *CommandHandler) RunCommand(ctx context.Context) {
 				continue
 			}
 
-			h.procs.Store(c.Name, cmd)
-
 			cmdWriter := NewCommandWriter(ctx, c.Name, h.Service)
 
 			cmd.Stdout = cmdWriter
@@ -76,6 +74,8 @@ func (h *CommandHandler) RunCommand(ctx context.Context) {
 
 				continue
 			}
+
+			h.procs.Store(c.Name, cmd)
 
 			err = cmd.Wait()
 			if err != nil {

@@ -23,22 +23,22 @@ import (
 // CommandHandler contains objects for work with command handlers.
 type CommandHandler struct {
 	jobs    chan entities.Command
-	procs   *sync.Map
+	procs   sync.Map
 	Config  *config.Config
 	Service command.Service
 }
 
 // commandsActivate activates handler for command object.
-func commandsActivate(ctx context.Context, r *http.ServeMux, repo repository.Repository, cfg *config.Config) {
+func commandsActivate(ctx context.Context, r *http.ServeMux, repo repository.Repository, cfg *config.Config, runCmdChan chan entities.Command) {
 	s := command.NewCommandService(ctx, repo)
-	newHandler(ctx, r, cfg, s)
+	newHandler(ctx, r, cfg, s, runCmdChan)
 }
 
 // newHandler initializes handler for command object.
-func newHandler(ctx context.Context, r *http.ServeMux, cfg *config.Config, s command.Service) {
+func newHandler(ctx context.Context, r *http.ServeMux, cfg *config.Config, s command.Service, runCmdChan chan entities.Command) {
 	h := &CommandHandler{
-		jobs:    make(chan entities.Command),
-		procs:   &sync.Map{},
+		jobs:    runCmdChan,
+		procs:   sync.Map{},
 		Config:  cfg,
 		Service: s,
 	}
@@ -70,14 +70,6 @@ func (h *CommandHandler) HandleCommand(w http.ResponseWriter, r *http.Request) {
 
 // HandleCreateCommand handles request to create and execute new command.
 func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		logger.Log.Error("HandleCreateCommand: incorrect method",
-			zap.String("method", r.Method))
-
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	ctx := r.Context()
 
 	var req entities.Command
@@ -140,22 +132,9 @@ func (h *CommandHandler) HandleCreateCommand(w http.ResponseWriter, r *http.Requ
 		h.jobs <- req
 	}()
 
-	resp := map[string]int{
-		"command_id": commandID,
-	}
-	out, err := json.Marshal(resp)
-	if err != nil {
-		logger.Log.Error("HandleCreateCommand: marshal command to JSON failed",
-			zap.Int("command_id", commandID),
-			zap.Error(err))
-
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	w.Write(out)
+	json.NewEncoder(w).Encode(map[string]int{"command_id": commandID})
 }
 
 // HandleGetCommand handles request to get the requested command.
@@ -168,6 +147,12 @@ func (h *CommandHandler) HandleGetCommand(w http.ResponseWriter, r *http.Request
 	}
 
 	queries := r.URL.Query()
+	if len(queries) == 0 {
+		logger.Log.Error("HandleGetCommand: queries not found")
+
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	for val := range queries {
 		_, ok := want[val]
 		if !ok {
@@ -183,6 +168,7 @@ func (h *CommandHandler) HandleGetCommand(w http.ResponseWriter, r *http.Request
 				zap.Int("queries_count", len(queries)))
 
 			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 
 		cmdName = queries[val][0]
@@ -223,6 +209,7 @@ func (h *CommandHandler) HandleCommands(w http.ResponseWriter, r *http.Request) 
 			zap.String("method", r.Method))
 
 		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
 	}
 
 	ctx := r.Context()
@@ -265,6 +252,12 @@ func (h *CommandHandler) HandleDeleteCommand(w http.ResponseWriter, r *http.Requ
 	}
 
 	queries := r.URL.Query()
+	if len(queries) == 0 {
+		logger.Log.Error("HandleGetCommand: queries not found")
+
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 	for val := range queries {
 		_, ok := want[val]
 		if !ok {
@@ -280,6 +273,7 @@ func (h *CommandHandler) HandleDeleteCommand(w http.ResponseWriter, r *http.Requ
 				zap.Int("queries_count", len(queries)))
 
 			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 
 		cmdName = queries[val][0]
