@@ -57,7 +57,7 @@ paths:
                   command_id:
                     type: integer
                     description: Идентификатор созданной команды
-                example: '{"ID": 1}'
+                example: '{"command_id": 1}'
         '400':
           description: Некорректные данные
         '409':
