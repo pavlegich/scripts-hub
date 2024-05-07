@@ -69,9 +69,9 @@ Application that provides REST API for parallel running the bash scripts.
 
 Для понимания работы с сервисом представлены:
 
-- описание API в файле _api.yaml_;
+- описание [API](https://github.com/pavlegich/scripts-hub/blob/main/api.yaml) в файле _api.yaml_;
 
-- примеры запросов в файле _scripts-hub.json_. 
+- [примеры](https://github.com/pavlegich/scripts-hub/blob/main/scripts-hub.json) запросов в файле _scripts-hub.json_. 
 
 ## Запуск
 
