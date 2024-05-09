@@ -3,7 +3,7 @@ version: '3.8'
 services:
   scripts-hub:
     build: ./
-    command: ./start.sh db ./scripts-hub
+    command: ./start.sh ./scripts-hub 
     depends_on:
       - db
     env_file:
