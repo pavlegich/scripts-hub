@@ -1,11 +1,14 @@
-DATABASE_DSN = postgresql://localhost:5432/postgres
 RATE_LIMIT = 3
-
-DOC_ADDR = localhost:6060
 
 SERVER_BINARY_NAME = server
 SERVER_PACKAGE_PATH = ./cmd/server
 SERVER_ADDR = localhost:8080
+
+DB_HOST=localhost
+DB_NAME=postgres
+DATABASE_DSN = postgresql://${DB_HOST}:5432/${DB_NAME}
+
+DOC_ADDR = localhost:6060
 
 # ====================
 # HELPERS
