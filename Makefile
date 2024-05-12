@@ -4,9 +4,9 @@ SERVER_BINARY_NAME = server
 SERVER_PACKAGE_PATH = ./cmd/server
 SERVER_ADDR = localhost:8080
 
-DB_HOST=localhost
 DB_NAME=postgres
-DATABASE_DSN = postgresql://${DB_HOST}:5432/${DB_NAME}
+DB_ADDR=localhost:5432
+DATABASE_DSN = postgresql://${DB_ADDR}/${DB_NAME}
 
 DOC_ADDR = localhost:6060
 

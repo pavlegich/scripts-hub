@@ -119,6 +119,6 @@ Application that provides REST API for parallel running the bash scripts.
 | `SERVER_PACKAGE_PATH` | `./cmd/server` | Путь к бинарному файлу для запуска приложения. |
 | `SERVER_ADDR` | `localhost:8080` | Адрес и порт, где будет запущено приложение. |
 | `DB_NAME` | `postgres` | Наименование базы данных. |
-| `DB_HOST` | `db` | Наименование хоста для базы данных. |
+| `DB_ADDR` | `localhost:5432` | Адрес и порт для подключения к базе данных. |
 | `DATABASE_DSN` | | Строка подключения к базе данных. |
 | `DOC_ADDR` | `localhost:6060` | Адрес и порт, где будет запущен сервис с документацией к приложению. |
