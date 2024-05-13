@@ -106,7 +106,7 @@ Application that provides REST API for parallel running the bash scripts.
 | `DB_USER` | `postgres` | Имя пользователя для базы данных. |
 | `DB_NAME` | `postgres` | Наименование базы данных. |
 | `DB_HOST` | `db` | Наименование хоста для базы данных. |
-| `GOOSE_DRIVER` | | Используемый драйвер, используемый Goose для миграции базы данных. |
+| `GOOSE_DRIVER` | | Драйвер, используемый Goose для миграции базы данных. |
 | `GOOSE_DBSTRING` | | Строка подключения, используемая Goose для миграции базы данных. |
 | `DATABASE_DSN` | | Строка подключения к базе данных. |
 
