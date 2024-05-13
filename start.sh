@@ -1,14 +1,11 @@
 #!/bin/sh
-# start.sh
 
 set -e
 
-host="$1"
-shift
 cmd="$@"
 
 # wait for postgres to be ready
-until PGPASSWORD=$DB_PASSWORD psql -h "$host" -U "postgres" -c '\q'; do
+until PGPASSWORD=$DB_PASSWORD psql -h $DB_HOST -U $DB_USER -c '\q'; do
   >&2 echo "Postgres is unavailable - sleeping"
   sleep 1
 done
@@ -16,9 +13,9 @@ done
 >&2 echo "Postgres is up - executing command"
 
 # make migrations
-#goose -dir ./migrations up
+goose -dir ./migrations up
 
 # run tests
-#go test -v ./...
+# go test -v ./...
 
 exec $cmd

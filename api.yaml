@@ -41,8 +41,6 @@ paths:
                 name:
                   type: string
                   description: Название команды
-                  items:
-                    type: string
                 script:
                   type: string
                   description: Команда
